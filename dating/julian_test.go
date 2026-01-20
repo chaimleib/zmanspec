@@ -17,6 +17,8 @@ func TestJulian(t *testing.T) {
 		{"2023-02-24T12:00:00Z", 2_460_000},
 		{"2000-01-01T12:00:00Z", 2_451_545},
 		{"2000-01-02T00:00:00Z", 2_451_545.5},
+		{"2013-01-01T00:30:00Z", 2_456_293.520_833_33},
+		{"2026-01-19T18:02:03Z", 2_461_060.251_423_61},
 	}
 	for _, c := range cases {
 		t.Run(c.Date, func(t *testing.T) {
@@ -41,6 +43,8 @@ func TestFromJulian(t *testing.T) {
 		{2_460_000, "2023-02-24T12:00:00Z"},
 		{2_451_545, "2000-01-01T12:00:00Z"},
 		{2_451_545.5, "2000-01-02T00:00:00Z"},
+		{2_456_293.520_833_33, "2013-01-01T00:30:00Z"},
+		{2_461_060.251_423_61, "2026-01-19T18:02:03Z"},
 	}
 	for _, c := range cases {
 		t.Run(c.Want, func(t *testing.T) {
@@ -49,8 +53,19 @@ func TestFromJulian(t *testing.T) {
 				t.Fatal(err)
 			}
 			got := dating.FromJulian(c.J)
-			if !d.Equal(got) {
-				t.Errorf("from %f want %s, got %s", c.J, c.Want, got)
+			diff := d.Sub(got)
+			absDiff := diff
+			if diff < 0 {
+				absDiff = -absDiff
+			}
+			if absDiff > time.Millisecond {
+				t.Errorf(
+					"from %f want %s, got %s which is %s different",
+					c.J,
+					c.Want,
+					got,
+					diff,
+				)
 			}
 		})
 	}
